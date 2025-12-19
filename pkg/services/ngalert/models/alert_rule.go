@@ -962,6 +962,14 @@ const (
 	RuleTypeFilterRecording
 )
 
+type PluginOriginFilter string
+
+const (
+	PluginOriginFilterNone PluginOriginFilter = ""     // Show all (default)
+	PluginOriginFilterHide PluginOriginFilter = "hide" // Exclude plugin rules
+	PluginOriginFilterOnly PluginOriginFilter = "only" // Only plugin rules
+)
+
 type GroupCursor struct {
 	NamespaceUID string `json:"n"`
 	RuleGroup    string `json:"g"`
@@ -1022,7 +1030,8 @@ type ListAlertRulesQuery struct {
 type ListAlertRulesExtendedQuery struct {
 	ListAlertRulesQuery
 
-	RuleType RuleTypeFilter
+	RuleType           RuleTypeFilter
+	PluginOriginFilter PluginOriginFilter
 
 	Limit         int64
 	RuleLimit     int64

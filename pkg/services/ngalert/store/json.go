@@ -45,6 +45,17 @@ func jsonKeyMissing(dialect migrator.Dialect, column, key string) (string, []any
 	}
 }
 
+func jsonKeyExists(dialect migrator.Dialect, column, key string) (string, []any) {
+	switch dialect.DriverName() {
+	case migrator.MySQL:
+		return fmt.Sprintf("JSON_EXTRACT(NULLIF(%s, ''), CONCAT('$.', ?)) IS NOT NULL", column), []any{key}
+	case migrator.Postgres:
+		return fmt.Sprintf("jsonb_extract_path_text(NULLIF(%s, '')::jsonb, ?) IS NOT NULL", column), []any{key}
+	default:
+		return "", nil
+	}
+}
+
 // GLOB functions for SQLite
 
 func globEquals(column, key, value string) (string, []any, error) {
@@ -69,6 +80,14 @@ func globKeyMissing(column, key string) (string, []any, error) {
 		return "", nil, err
 	}
 	return column + " NOT GLOB ?", []any{"*" + pattern + "*"}, nil
+}
+
+func globKeyExists(column, key string) (string, []any, error) {
+	pattern, err := buildGlobKeyPattern(key)
+	if err != nil {
+		return "", nil, err
+	}
+	return column + " GLOB ?", []any{"*" + pattern + "*"}, nil
 }
 
 // Search for `"key":"value"`

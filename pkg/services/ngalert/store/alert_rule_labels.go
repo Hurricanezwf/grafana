@@ -18,6 +18,28 @@ func buildLabelMatcherCondition(dialect migrator.Dialect, column string, m *labe
 	return buildLabelMatcherJSON(dialect, column, m)
 }
 
+// buildLabelKeyExistsCondition builds SQL for checking if a label key exists.
+// For MySQL/PostgreSQL, it uses JSON functions, and
+// for SQLite, it uses GLOB patterns.
+func buildLabelKeyExistsCondition(dialect migrator.Dialect, column string, key string) (string, []any, error) {
+	if dialect.DriverName() == migrator.SQLite {
+		return globKeyExists(column, key)
+	}
+	sql, args := jsonKeyExists(dialect, column, key)
+	return sql, args, nil
+}
+
+// buildLabelKeyMissingCondition builds SQL for checking if a label key does not exist.
+// For MySQL/PostgreSQL, it uses JSON functions, and
+// for SQLite, it uses GLOB patterns.
+func buildLabelKeyMissingCondition(dialect migrator.Dialect, column string, key string) (string, []any, error) {
+	if dialect.DriverName() == migrator.SQLite {
+		return globKeyMissing(column, key)
+	}
+	sql, args := jsonKeyMissing(dialect, column, key)
+	return sql, args, nil
+}
+
 func buildLabelMatcherGlob(column string, m *labels.Matcher) (string, []any, error) {
 	switch {
 	case m.Type == labels.MatchEqual && m.Value == "":

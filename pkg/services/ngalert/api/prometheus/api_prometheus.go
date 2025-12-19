@@ -458,17 +458,18 @@ type paginationContext struct {
 	alertStateMutator RuleAlertStateMutator
 
 	// Query parameters
-	namespaceUIDs   []string
-	ruleUIDs        []string
-	dashboardUID    string
-	panelID         int64
-	ruleGroups      []string
-	receiverName    string
-	dataSourceUIDs  []string
-	title           string
-	searchRuleGroup string
-	ruleType        ngmodels.RuleTypeFilter
-	ruleNamesSet    map[string]struct{}
+	namespaceUIDs      []string
+	ruleUIDs           []string
+	dashboardUID       string
+	panelID            int64
+	ruleGroups         []string
+	receiverName       string
+	dataSourceUIDs     []string
+	title              string
+	searchRuleGroup    string
+	ruleType           ngmodels.RuleTypeFilter
+	pluginOriginFilter ngmodels.PluginOriginFilter
+	ruleNamesSet       map[string]struct{}
 
 	// Filters
 	stateFilterSet     map[eval.State]struct{}
@@ -514,11 +515,12 @@ func (ctx *paginationContext) fetchAndFilterPage(log log.Logger, store ListAlert
 			SearchRuleGroup: ctx.searchRuleGroup,
 			LabelMatchers:   storeMatchers,
 		},
-		RuleType:      ctx.ruleType,
-		Limit:         remainingGroups,
-		RuleLimit:     remainingRules,
-		ContinueToken: token,
-		Compact:       ctx.compact,
+		RuleType:           ctx.ruleType,
+		PluginOriginFilter: ctx.pluginOriginFilter,
+		Limit:              remainingGroups,
+		RuleLimit:          remainingRules,
+		ContinueToken:      token,
+		Compact:            ctx.compact,
 	}
 
 	ruleList, newToken, err := store.ListAlertRulesByGroup(ctx.opts.Ctx, &byGroupQuery)
@@ -643,6 +645,7 @@ func paginateRuleGroups(log log.Logger, store ListAlertRulesStoreV2, ctx *pagina
 	return allGroups, rulesTotals, continueToken, nil
 }
 
+// nolint:gocyclo
 func PrepareRuleGroupStatusesV2(log log.Logger, store ListAlertRulesStoreV2, opts RuleGroupStatusesOptions, ruleStatusMutator RuleStatusMutator, alertStateMutator RuleAlertStateMutator, provenanceRecords map[string]ngmodels.Provenance) apimodels.RuleResponse {
 	ctx, span := tracer.Start(opts.Ctx, "api.prometheus.PrepareRuleGroupStatusesV2")
 	defer span.End()
@@ -800,6 +803,15 @@ func PrepareRuleGroupStatusesV2(log log.Logger, store ListAlertRulesStoreV2, opt
 		ruleType = ngmodels.RuleTypeFilterAll
 	}
 
+	pluginOriginFilter := ngmodels.PluginOriginFilterNone
+	switch opts.Query.Get("plugins") {
+	case "hide":
+		pluginOriginFilter = ngmodels.PluginOriginFilterHide
+	case "only":
+		pluginOriginFilter = ngmodels.PluginOriginFilterOnly
+	}
+	span.SetAttributes(attribute.String("plugins_filter", string(pluginOriginFilter)))
+
 	// Pagination limits
 	//
 	// group_limit: Maximum number of rule groups to return
@@ -848,6 +860,7 @@ func PrepareRuleGroupStatusesV2(log log.Logger, store ListAlertRulesStoreV2, opt
 		dataSourceUIDs:     dataSourceUIDs,
 		searchRuleGroup:    searchRuleGroup,
 		ruleType:           ruleType,
+		pluginOriginFilter: pluginOriginFilter,
 		ruleNamesSet:       ruleNamesSet,
 		stateFilterSet:     stateFilterSet,
 		healthFilterSet:    healthFilterSet,
