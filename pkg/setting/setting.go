@@ -184,11 +184,8 @@ func AddChangePasswordLink() bool {
 type SnapshotObjectStorageConfig struct {
 	// Provider specifies the object storage provider (tencent, s3, oss, minio)
 	Provider string
-	// Bucket is the bucket/container name
-	Bucket string
-	// Region is the region of the bucket
-	Region string
-	// Endpoint is the custom endpoint URL
+	// Endpoint is the bucket endpoint URL
+	// For Tencent COS: https://<bucket>.cos.<region>.myqcloud.com
 	Endpoint string
 	// SecretID is the access key ID
 	SecretID string
@@ -1793,12 +1790,10 @@ func readSnapshotsSettings(cfg *Cfg, iniFile *ini.File) error {
 	objectStorage := iniFile.Section("snapshots.object_storage")
 	cfg.SnapshotObjectStorage = SnapshotObjectStorageConfig{
 		Provider:   valueAsString(objectStorage, "provider", "tencent"),
-		Bucket:     valueAsString(objectStorage, "bucket", ""),
-		Region:     valueAsString(objectStorage, "region", ""),
 		Endpoint:   valueAsString(objectStorage, "endpoint", ""),
 		SecretID:   valueAsString(objectStorage, "secret_id", ""),
 		SecretKey:  valueAsString(objectStorage, "secret_key", ""),
-		PathPrefix: valueAsString(objectStorage, "path_prefix", "snapshots/"),
+		PathPrefix: valueAsString(objectStorage, "path_prefix", "never-delete-me/"),
 	}
 
 	return nil

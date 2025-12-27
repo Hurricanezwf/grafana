@@ -29,8 +29,6 @@ func ProvideStore(sqlDB db.DB, cfg *setting.Cfg) dashboardsnapshots.Store {
 
 	storageCfg := objectstore.Config{
 		Provider:   cfg.SnapshotObjectStorage.Provider,
-		Bucket:     cfg.SnapshotObjectStorage.Bucket,
-		Region:     cfg.SnapshotObjectStorage.Region,
 		Endpoint:   cfg.SnapshotObjectStorage.Endpoint,
 		SecretID:   cfg.SnapshotObjectStorage.SecretID,
 		SecretKey:  cfg.SnapshotObjectStorage.SecretKey,
@@ -45,7 +43,7 @@ func ProvideStore(sqlDB db.DB, cfg *setting.Cfg) dashboardsnapshots.Store {
 
 	logger.Info("Using object storage for dashboard snapshots",
 		"provider", cfg.SnapshotObjectStorage.Provider,
-		"bucket", cfg.SnapshotObjectStorage.Bucket,
+		"endpoint", cfg.SnapshotObjectStorage.Endpoint,
 	)
 
 	return objectstore.NewObjectStorageStore(storage, storageCfg)

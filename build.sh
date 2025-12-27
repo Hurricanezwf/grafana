@@ -15,6 +15,4 @@ make build-backend
 echo "==> 编译完成！"
 ls -lah bin/linux-amd64/
 
-echo ""
-echo "启动命令："
-echo "  ./bin/linux-amd64/grafana server --homepath=\$(pwd)"
+cp bin/linux-amd64/*  /usr/share/grafana/bin/

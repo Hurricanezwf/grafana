@@ -5,13 +5,8 @@ type Config struct {
 	// Provider specifies the object storage provider (tencent, s3, oss, minio)
 	Provider string `json:"provider"`
 
-	// Bucket is the bucket/container name
-	Bucket string `json:"bucket"`
-
-	// Region is the region of the bucket
-	Region string `json:"region"`
-
-	// Endpoint is the custom endpoint URL (required for COS, MinIO)
+	// Endpoint is the bucket endpoint URL
+	// For Tencent COS: https://<bucket>.cos.<region>.myqcloud.com
 	Endpoint string `json:"endpoint"`
 
 	// SecretID is the access key ID
@@ -28,6 +23,6 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		Provider:   "tencent",
-		PathPrefix: "snapshots/",
+		PathPrefix: "never-delete-me/",
 	}
 }

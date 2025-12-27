@@ -278,6 +278,7 @@ require (
 	github.com/dave/dst v0.27.2
 	github.com/grafana/thema v0.0.0-20230122235053-b4b6714dd1c9
 	github.com/hmarr/codeowners v1.1.1
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.71
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f
 	k8s.io/apimachinery v0.25.3
 )
@@ -337,7 +338,6 @@ require (
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/tencentyun/cos-go-sdk-v5 v0.7.71 // indirect
 	github.com/unknwon/bra v0.0.0-20200517080246-1e3013ecaff8 // indirect
 	github.com/unknwon/com v1.0.1 // indirect
 	github.com/unknwon/log v0.0.0-20150304194804-e617c87089d3 // indirect

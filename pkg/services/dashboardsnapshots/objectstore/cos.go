@@ -13,19 +13,18 @@ import (
 // COSStorage implements ObjectStorage using Tencent Cloud COS
 type COSStorage struct {
 	client *cos.Client
-	bucket string
 }
 
 // NewCOSStorage creates a new COS storage backend
 func NewCOSStorage(cfg Config) (*COSStorage, error) {
-	if cfg.Bucket == "" {
-		return nil, fmt.Errorf("bucket is required for COS storage")
+	if cfg.Endpoint == "" {
+		return nil, fmt.Errorf("endpoint is required for COS storage")
 	}
 	if cfg.SecretID == "" || cfg.SecretKey == "" {
 		return nil, fmt.Errorf("secret_id and secret_key are required for COS storage")
 	}
 
-	// Build bucket URL: https://<bucket>-<appid>.cos.<region>.myqcloud.com
+	// Parse bucket URL: https://<bucket>.cos.<region>.myqcloud.com
 	bucketURL, err := url.Parse(cfg.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("invalid endpoint: %w", err)
@@ -40,7 +39,6 @@ func NewCOSStorage(cfg Config) (*COSStorage, error) {
 
 	return &COSStorage{
 		client: client,
-		bucket: cfg.Bucket,
 	}, nil
 }
 
