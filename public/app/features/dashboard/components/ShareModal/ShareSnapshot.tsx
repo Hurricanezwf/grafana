@@ -59,7 +59,7 @@ export class ShareSnapshot extends PureComponent<Props, State> {
       selectedExpireOption: this.expireOptions[0],
       snapshotExpires: this.expireOptions[0].value,
       snapshotName: props.dashboard.title,
-      timeoutSeconds: 4,
+      timeoutSeconds: 30,
       snapshotUrl: '',
       deleteUrl: '',
       externalEnabled: false,
@@ -262,7 +262,7 @@ export class ShareSnapshot extends PureComponent<Props, State> {
             </Button>
           )}
           <Button variant="primary" disabled={isLoading} onClick={this.createSnapshot()}>
-            <Trans i18nKey="share-modal.snapshot.local-button">Local Snapshot</Trans>
+            <Trans i18nKey="share-modal.snapshot.local-button">Create Snapshot</Trans>
           </Button>
         </Modal.ButtonRow>
       </>
