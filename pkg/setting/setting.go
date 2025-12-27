@@ -180,6 +180,24 @@ func AddChangePasswordLink() bool {
 	return !DisableLoginForm
 }
 
+// SnapshotObjectStorageConfig holds configuration for snapshot object storage
+type SnapshotObjectStorageConfig struct {
+	// Provider specifies the object storage provider (tencent, s3, oss, minio)
+	Provider string
+	// Bucket is the bucket/container name
+	Bucket string
+	// Region is the region of the bucket
+	Region string
+	// Endpoint is the custom endpoint URL
+	Endpoint string
+	// SecretID is the access key ID
+	SecretID string
+	// SecretKey is the secret access key
+	SecretKey string
+	// PathPrefix is the prefix for all snapshot objects
+	PathPrefix string
+}
+
 // TODO move all global vars to this struct
 type Cfg struct {
 	Raw    *ini.File
@@ -409,6 +427,9 @@ type Cfg struct {
 	SnapShotRemoveExpired bool
 
 	SnapshotPublicMode bool
+
+	// Snapshot Object Storage
+	SnapshotObjectStorage SnapshotObjectStorageConfig
 
 	ErrTemplateName string
 
@@ -1764,9 +1785,21 @@ func readSnapshotsSettings(cfg *Cfg, iniFile *ini.File) error {
 	cfg.ExternalSnapshotUrl = valueAsString(snapshots, "external_snapshot_url", "")
 	cfg.ExternalSnapshotName = valueAsString(snapshots, "external_snapshot_name", "")
 
-	cfg.ExternalEnabled = snapshots.Key("external_enabled").MustBool(true)
+	cfg.ExternalEnabled = snapshots.Key("external_enabled").MustBool(false)
 	cfg.SnapShotRemoveExpired = snapshots.Key("snapshot_remove_expired").MustBool(true)
 	cfg.SnapshotPublicMode = snapshots.Key("public_mode").MustBool(false)
+
+	// Object storage configuration for snapshots
+	objectStorage := iniFile.Section("snapshots.object_storage")
+	cfg.SnapshotObjectStorage = SnapshotObjectStorageConfig{
+		Provider:   valueAsString(objectStorage, "provider", "tencent"),
+		Bucket:     valueAsString(objectStorage, "bucket", ""),
+		Region:     valueAsString(objectStorage, "region", ""),
+		Endpoint:   valueAsString(objectStorage, "endpoint", ""),
+		SecretID:   valueAsString(objectStorage, "secret_id", ""),
+		SecretKey:  valueAsString(objectStorage, "secret_key", ""),
+		PathPrefix: valueAsString(objectStorage, "path_prefix", "snapshots/"),
+	}
 
 	return nil
 }
