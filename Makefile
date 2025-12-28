@@ -88,6 +88,10 @@ build-go: $(MERGED_SPEC_TARGET) gen-go ## Build all Go binaries.
 	@echo "build go files"
 	$(GO) run build.go $(GO_BUILD_FLAGS) build
 
+build-go-with-vendor: ## Build all Go binaries using vendor directory.
+	@echo "build all go binaries with vendor"
+	$(GO) run -mod=vendor build.go $(GO_BUILD_FLAGS) -vendor build
+
 build-backend: ## Build Grafana backend.
 	@echo "build backend"
 	$(GO) run build.go $(GO_BUILD_FLAGS) build-backend
@@ -105,7 +109,7 @@ build-js: ## Build frontend assets.
 	yarn run build
 	yarn run plugins:build-bundled
 
-build: build-go build-js ## Build backend and frontend.
+build: build-go-with-vendor build-js ## Build backend and frontend.
 
 run: $(BRA) ## Build and run web server on filesystem changes.
 	$(BRA) run

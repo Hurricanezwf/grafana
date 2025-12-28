@@ -1,0 +1,56 @@
+# syntax=docker/dockerfile:1
+# Multi-stage build for CentOS 7.9 compatible Grafana binaries
+# Usage:
+#   docker build -f Dockerfile.centos7 -t grafana-centos7 .
+#   docker run --rm -v $(pwd)/bin:/host-bin grafana-centos7
+
+# Stage 1: Base build environment (cached, only rebuilt when dependencies change)
+FROM centos:7.9.2009 AS build-base
+
+# Switch to Aliyun mirror (CentOS 7 official mirrors are EOL)
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=https://mirrors.aliyun.com|g' /etc/yum.repos.d/CentOS-*.repo && \
+    yum clean all && yum makecache
+
+# Install build dependencies
+RUN yum install -y epel-release && \
+    sed -i 's|^metalink|#metalink|g' /etc/yum.repos.d/epel*.repo && \
+    sed -i 's|^#baseurl=http://download.fedoraproject.org/pub|baseurl=https://mirrors.aliyun.com|g' /etc/yum.repos.d/epel*.repo && \
+    yum install -y \
+        gcc \
+        gcc-c++ \
+        make \
+        git \
+        curl \
+        && \
+    yum clean all
+
+# Install Go 1.19.13 (use China mirror)
+ARG GO_VERSION=1.19.13
+RUN curl -fsSL https://mirrors.aliyun.com/golang/go${GO_VERSION}.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
+    tar -C /usr/local -xzf /tmp/go.tar.gz && \
+    rm /tmp/go.tar.gz
+
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV GOPATH="/go"
+ENV PATH="${GOPATH}/bin:${PATH}"
+
+# Stage 2: Build binaries using vendor
+FROM build-base AS builder
+
+WORKDIR /build
+
+# Copy all source code and vendor directory
+COPY . .
+
+# Build all Go binaries using vendor mode via Makefile
+RUN make build-go-with-vendor
+
+# Stage 3: Output
+FROM alpine:3.18
+
+WORKDIR /output
+
+COPY --from=builder /build/bin/linux-amd64/* ./
+
+CMD ["sh", "-c", "cp -v /output/* /host-bin/ 2>/dev/null || echo 'Usage: docker run --rm -v $(pwd)/bin:/host-bin <image>'"]
