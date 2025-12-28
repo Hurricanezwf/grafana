@@ -451,7 +451,7 @@
       "expire-week": "7 Days",
       "info-text-1": "A snapshot is an instant way to share an interactive dashboard publicly. When created, we strip sensitive data like queries (metric, template, and annotation) and panel links, leaving only the visible metric data and series names embedded in your dashboard.",
       "info-text-2": "Keep in mind, your snapshot <1>can be viewed by anyone</1> that has the link and can access the URL. Share wisely.",
-      "local-button": "Local Snapshot",
+      "local-button": "Save Snapshot",
       "mistake-message": "Did you make a mistake? ",
       "name": "Snapshot name",
       "timeout": "Timeout (seconds)",

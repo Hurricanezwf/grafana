@@ -177,6 +177,10 @@ func doBuild(binaryName, pkg string, opts BuildOpts) error {
 
 	args := []string{"build", "-ldflags", lf}
 
+	if opts.useVendor {
+		args = append(args, "-mod=vendor")
+	}
+
 	if opts.goos == GoOSWindows {
 		// Work around a linking error on Windows: "export ordinal too large"
 		args = append(args, "-buildmode=exe")

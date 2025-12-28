@@ -8,6 +8,7 @@ import (
 	"github.com/grafana/grafana/pkg/infra/db"
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/services/dashboardsnapshots"
+	"github.com/grafana/grafana/pkg/services/dashboardsnapshots/objectstore"
 	"github.com/grafana/grafana/pkg/services/org"
 	"github.com/grafana/grafana/pkg/setting"
 )
@@ -21,8 +22,31 @@ type DashboardSnapshotStore struct {
 // DashboardStore implements the Store interface
 var _ dashboardsnapshots.Store = (*DashboardSnapshotStore)(nil)
 
-func ProvideStore(db db.DB, cfg *setting.Cfg) *DashboardSnapshotStore {
-	return &DashboardSnapshotStore{store: db, log: log.New("dashboardsnapshot.store"), cfg: cfg}
+// ProvideStore creates a snapshot store using object storage.
+// Snapshots are stored in object storage to prevent database bloat.
+func ProvideStore(sqlDB db.DB, cfg *setting.Cfg) dashboardsnapshots.Store {
+	logger := log.New("dashboardsnapshot.store")
+
+	storageCfg := objectstore.Config{
+		Provider:   cfg.SnapshotObjectStorage.Provider,
+		Endpoint:   cfg.SnapshotObjectStorage.Endpoint,
+		SecretID:   cfg.SnapshotObjectStorage.SecretID,
+		SecretKey:  cfg.SnapshotObjectStorage.SecretKey,
+		PathPrefix: cfg.SnapshotObjectStorage.PathPrefix,
+	}
+
+	storage, err := objectstore.NewObjectStorage(storageCfg)
+	if err != nil {
+		logger.Error("Failed to create object storage for snapshots", "error", err)
+		panic("snapshot object storage configuration is required: " + err.Error())
+	}
+
+	logger.Info("Using object storage for dashboard snapshots",
+		"provider", cfg.SnapshotObjectStorage.Provider,
+		"endpoint", cfg.SnapshotObjectStorage.Endpoint,
+	)
+
+	return objectstore.NewObjectStorageStore(storage, storageCfg)
 }
 
 // DeleteExpiredSnapshots removes snapshots with old expiry dates.
